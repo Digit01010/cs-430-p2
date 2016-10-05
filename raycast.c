@@ -487,7 +487,7 @@ Object** read_scene(char* filename) {
             }
           } else if (strcmp(key, "color") == 0) {
             double* value = next_vector(json);
-            printf("C:%d, %d, %d \n", (int)value[0], (int)value[1], (int)value[2]);
+            printf("C:%f, %f, %f \n", value[0], value[1], value[2]);
             switch (objects[objcnt]->kind) {
             case 0:
               fprintf(stderr, "Error: Unexpected key on line %d.\n", line);
@@ -501,7 +501,7 @@ Object** read_scene(char* filename) {
             }
           } else if (strcmp(key, "position") == 0){
             double* value = next_vector(json);
-            printf("P:%d, %d, %d \n", (int)value[0], (int)value[1], (int)value[2]);
+            printf("P:%f, %f, %f \n", value[0], value[1], value[2]);
             switch (objects[objcnt]->kind) {
             case 1:
               objects[objcnt]->sphere.position[0] = value[0];
