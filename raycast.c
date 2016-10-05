@@ -44,7 +44,6 @@ char* next_string(FILE*);
 double next_number(FILE*);
 double* next_vector(FILE*);
 void read_scene(char*);
-int loop();
 
 static inline double sqr(double v) {
   return v*v;
@@ -59,8 +58,94 @@ static inline void normalize(double* v) {
 }
 
 int main(int argc, char *argv[]) {
-  loop();
-  //read_scene(argv[1]);
+  
+  
+  int N = atoi(argv[1]);
+  int M = atoi(argv[2]);
+
+  
+  Object** objects;
+  objects = malloc(sizeof(Object*)*2);
+  objects[0] = malloc(sizeof(Object));
+  objects[0]->kind = 0;
+  objects[0]->sphere.radius = 5;
+  // object[0]->teapot.handle_length = 2;
+  objects[0]->sphere.position[0] = 0;
+  objects[0]->sphere.position[1] = 5;
+  objects[0]->sphere.position[2] = 20;
+  objects[1] = NULL;
+  
+  double cx = 0;
+  double cy = 0;
+  double h = 0.7;
+  double w = 0.7;
+
+
+  
+  Pixel *buffer = malloc(sizeof(Pixel) * N * M);
+  
+  double pixheight = h / M;
+  double pixwidth = w / N;
+  for (int y = M; y > 0; y -= 1) {
+    for (int x = 0; x < N; x += 1) {
+      double Ro[3] = {0, 0, 0};
+      // Rd = normalize(P - Ro)
+      double Rd[3] = {
+        cx - (w/2) + pixwidth * (x + 0.5),
+        cy - (h/2) + pixheight * (y + 0.5),
+        1
+      };
+      normalize(Rd);
+
+      double best_t = INFINITY;
+      for (int i=0; objects[i] != 0; i += 1) {
+        double t = 0;
+
+        switch(objects[i]->kind) {
+        case 0:
+          t = sphere_intersection(Ro, Rd,
+                                    objects[i]->sphere.position,
+                                    objects[i]->sphere.radius);
+          break;
+        case 1:
+          t = plane_intersection(Ro, Rd,
+                                    objects[i]->plane.position,
+                                    objects[i]->plane.normal);
+          break;
+        default:
+          // Horrible error
+          exit(1);
+        }
+        if (t > 0 && t < best_t) best_t = t;
+      }
+      int p = (M - y)*N + x;
+      if (best_t > 0 && best_t != INFINITY) {
+        printf("#");
+        buffer[p].red = 255;
+        buffer[p].green = 255;
+        buffer[p].blue = 255;
+      } else {
+        printf(".");
+        buffer[p].red = 0;
+        buffer[p].green = 0;
+        buffer[p].blue = 0;
+      }
+      
+    }
+    printf("\n");
+  }
+  
+  FILE* output = fopen(argv[4], "w");
+  
+  Header outHeader;
+  outHeader.magicNumber = 3;
+  outHeader.maxColor = 255;
+  outHeader.width = N;
+  outHeader.height = M;
+  
+  writeP3(buffer, outHeader, output);
+  
+  
   return 0;
 }
 
@@ -151,94 +236,6 @@ double plane_intersection(double* Ro, double* Rd,
   return -1;
 }
 */
-
-int loop() {
-
-  Object** objects;
-  objects = malloc(sizeof(Object*)*2);
-  objects[0] = malloc(sizeof(Object));
-  objects[0]->kind = 0;
-  objects[0]->sphere.radius = 5;
-  // object[0]->teapot.handle_length = 2;
-  objects[0]->sphere.position[0] = 0;
-  objects[0]->sphere.position[1] = 5;
-  objects[0]->sphere.position[2] = 20;
-  objects[1] = NULL;
-  
-  double cx = 0;
-  double cy = 0;
-  double h = 0.7;
-  double w = 0.7;
-
-  int M = 20;
-  int N = 20;
-  
-  Pixel *buffer = malloc(sizeof(Pixel) * N * M);
-  
-  double pixheight = h / M;
-  double pixwidth = w / N;
-  for (int y = M; y > 0; y -= 1) {
-    for (int x = 0; x < N; x += 1) {
-      double Ro[3] = {0, 0, 0};
-      // Rd = normalize(P - Ro)
-      double Rd[3] = {
-        cx - (w/2) + pixwidth * (x + 0.5),
-        cy - (h/2) + pixheight * (y + 0.5),
-        1
-      };
-      normalize(Rd);
-
-      double best_t = INFINITY;
-      for (int i=0; objects[i] != 0; i += 1) {
-        double t = 0;
-
-        switch(objects[i]->kind) {
-        case 0:
-          t = sphere_intersection(Ro, Rd,
-                                    objects[i]->sphere.position,
-                                    objects[i]->sphere.radius);
-          break;
-        case 1:
-          t = plane_intersection(Ro, Rd,
-                                    objects[i]->plane.position,
-                                    objects[i]->plane.normal);
-          break;
-        default:
-          // Horrible error
-          exit(1);
-        }
-        if (t > 0 && t < best_t) best_t = t;
-      }
-      int p = (M - y)*N + x;
-      if (best_t > 0 && best_t != INFINITY) {
-        printf("#");
-        buffer[p].red = 255;
-        buffer[p].green = 255;
-        buffer[p].blue = 255;
-      } else {
-        printf(".");
-        buffer[p].red = 0;
-        buffer[p].green = 0;
-        buffer[p].blue = 0;
-      }
-      
-    }
-    printf("\n");
-  }
-  
-  FILE* output = fopen("output.ppm", "w");
-  
-  Header outHeader;
-  outHeader.magicNumber = 3;
-  outHeader.maxColor = 255;
-  outHeader.width = N;
-  outHeader.height = M;
-  
-  writeP3(buffer, outHeader, output);
-  
-  
-  return 0;
-}
 
 // Writes P3 data
 void writeP3(Pixel *buffer, Header h, FILE *fh) {
