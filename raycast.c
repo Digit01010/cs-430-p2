@@ -68,9 +68,16 @@ int main(int argc, char *argv[]) {
     return(1);
   }
   
+  // Get dimensions
   int N = atoi(argv[1]);
   int M = atoi(argv[2]);
-
+  
+  if (N <= 0 || M <= 0) {
+    fprintf(stderr, "Error: Invalid dimensions.\n");
+    exit(1);
+  }
+  
+  // Read the scene file
   Object** objects = read_scene(argv[3]);
   
   double cx = 0;
@@ -79,6 +86,7 @@ int main(int argc, char *argv[]) {
   double h;
   double w;
   
+  // Find the camera and get the height and width
   int cur = 0;
   int cam = 0;
   while (objects[cur] != NULL) {
@@ -100,14 +108,16 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
   
-  
-  
+  // Initialize pixel buffer
   Pixel *buffer = malloc(sizeof(Pixel) * N * M);
   
   double pixheight = h / M;
   double pixwidth = w / N;
-  for (int y = M; y > 0; y -= 1) {
+  for (int y = M; y > 0; y -= 1) { // Going through y from greatest to least
+                                   // for convenient pixel output
     for (int x = 0; x < N; x += 1) {
+      // Raycast
+      
       double Ro[3] = {0, 0, 0};
       // Rd = normalize(P - Ro)
       double Rd[3] = {
@@ -119,9 +129,10 @@ int main(int argc, char *argv[]) {
 
       double best_t = INFINITY;
       int best_i = 0;
+      // Check intersections
       for (int i=0; objects[i] != 0; i += 1) {
         double t = 0;
-
+        // Call correct intersection function
         switch(objects[i]->kind) {
         case 0:
           t = -1;
@@ -145,12 +156,15 @@ int main(int argc, char *argv[]) {
           best_i = i;
         }
       }
-      int p = (M - y)*N + x;
+      // Note: Going through y in reverse, so adjust index accordingly
+      int p = (M - y)*N + x; // Index of buffer
       if (best_t > 0 && best_t != INFINITY) {
+        // Scale color values for ppm output
         buffer[p].red = (char) objects[best_i]->color[0] * 255;
         buffer[p].green = (char) objects[best_i]->color[1] * 255;
         buffer[p].blue = (char) objects[best_i]->color[2] * 255;
       } else {
+        // If there is no intersection, have a black background
         buffer[p].red = 0;
         buffer[p].green = 0;
         buffer[p].blue = 0;
@@ -173,7 +187,6 @@ int main(int argc, char *argv[]) {
   outHeader.height = M;
   
   writeP3(buffer, outHeader, output);
-  
   
   return 0;
 }
