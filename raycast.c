@@ -102,8 +102,32 @@ int main(int argc, char *argv[]) {
   
   double cx = 0;
   double cy = 0;
-  double h = 1;
-  double w = 1;
+  
+  double h;
+  double w;
+  
+  int cur = 0;
+  int cam = 0;
+  while (objects[cur] != NULL) {
+    if (objects[cur]->kind == 0) {
+      h = objects[cur]->camera.height;
+      w = objects[cur]->camera.width;
+      cam += 1;
+    }
+    cur += 1;
+  }
+  
+  if (cam = 0) {
+    fprintf(stderr, "Error: No camera found.\n");
+    exit(1);
+  }
+  
+  if (cam > 1) {
+    fprintf(stderr, "Error: Multiple cameras not supported.\n");
+    exit(1);
+  }
+  
+  
   
   Pixel *buffer = malloc(sizeof(Pixel) * N * M);
   
@@ -165,7 +189,7 @@ int main(int argc, char *argv[]) {
   FILE* output = fopen(argv[4], "w");
   
   if (output == NULL) {
-    fprintf(stderr, "Error: Could not write to file \"%s\"\n", filename);
+    fprintf(stderr, "Error: Could not write to file \"%s\"\n", argv[4]);
     exit(1);
   }
   
@@ -351,8 +375,8 @@ char* next_string(FILE* json) {
 
 double next_number(FILE* json) {
   double value;
-  fscanf(json, "%lf", &value);
-  if (ferror(json)) {
+  int cnt = fscanf(json, "%lf", &value);
+  if (cnt != 1) {
     fprintf(stderr, "Error: Could not read number on line %d.\n", line);
     exit(1);
   }
@@ -440,13 +464,41 @@ Object** read_scene(char* filename) {
 
       skip_ws(json);
 
+      int valcnt = 0;
       while (1) {
         // , }
         c = next_c(json);
         if (c == '}') {
           // stop parsing this object
+          switch (objects[objcnt]->kind) {
+          case 0:
+            if (valcnt != 2) {
+              fprintf(stderr, "Error: Bad value count.");
+              exit(1);
+            }
+            break;
+          case 1:
+            if (valcnt != 3) {
+              fprintf(stderr, "Error: Bad value count.");
+              exit(1);
+            }
+            break;
+          case 2:
+            if (valcnt != 3) {
+              fprintf(stderr, "Error: Bad value count.");
+              exit(1);
+            }
+            break;
+          default:
+            fprintf(stderr, "Error: Unexpected key on line %d.\n", line);
+            exit(1);
+            break;
+          }
+          
+          
           objcnt += 1;
           if (objcnt > 128) {
+            fprintf(stderr, "Error: 128 object count exceeded.");
             exit(1);
           }
           break;
@@ -457,6 +509,8 @@ Object** read_scene(char* filename) {
           skip_ws(json);
           expect_c(json, ':');
           skip_ws(json);
+          
+          
           
           if (strcmp(key, "width") == 0) {
             double value = next_number(json);
@@ -540,6 +594,7 @@ Object** read_scene(char* filename) {
                     key, line);
             //char* value = next_string(json);
           }
+          valcnt += 1;
           skip_ws(json);
         } else {
           fprintf(stderr, "Error: Unexpected value on line %d\n", line);
