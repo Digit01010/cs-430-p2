@@ -16,9 +16,11 @@ char* next_string(FILE*);
 double next_number(FILE*);
 double* next_vector(FILE*);
 void read_scene(char*);
+int loop();
 
 int main(int argc, char *argv[]) {
-  read_scene(argv[1]);
+  loop();
+  //read_scene(argv[1]);
   return 0;
 }
 
@@ -30,20 +32,17 @@ int main(int argc, char *argv[]) {
 // Plymorphism in C
 
 typedef struct {
-  int kind; // 0 = cylinder, 1 = sphere, 2 = teapot
+  int kind; // 0 = sphere, 1 = plane
   double color[3];
   union {
     struct {
-      double center[3];
-      double radius;
-    } cylinder;
-    struct {
-      double center[3];
+      double position[3];
       double radius;
     } sphere;
     struct {
-      double handle_length;
-    } teapot;
+      double position[3];
+      double normal[3];
+    } plane;
   };
 } Object;
 
@@ -60,8 +59,18 @@ static inline void normalize(double* v) {
   v[2] /= len;
 }
 
+double sphere_intersection(double* Ro, double* Rd,
+			     double* P, double r) {
+  return -1;
+}
 
-double cylinder_intersection(double* Ro, double* Rd,
+double plane_intersection(double* Ro, double* Rd,
+			     double* P, double* n) {
+  return -1;
+}
+
+
+/*double cylinder_intersection(double* Ro, double* Rd,
 			     double* C, double r) {
   // Step 1. Find the equation for the object you are
   // interested in..  (e.g., cylinder)
@@ -120,6 +129,7 @@ double cylinder_intersection(double* Ro, double* Rd,
 
   return -1;
 }
+*/
 
 int loop() {
 
@@ -127,11 +137,11 @@ int loop() {
   objects = malloc(sizeof(Object*)*2);
   objects[0] = malloc(sizeof(Object));
   objects[0]->kind = 0;
-  objects[0]->cylinder.radius = 2;
+  objects[0]->sphere.radius = 1;
   // object[0]->teapot.handle_length = 2;
-  objects[0]->cylinder.center[0] = 0;
-  objects[0]->cylinder.center[1] = 0;
-  objects[0]->cylinder.center[2] = 20;
+  objects[0]->sphere.position[0] = 0;
+  objects[0]->sphere.position[1] = 0;
+  objects[0]->sphere.position[2] = 20;
   objects[1] = NULL;
   
   double cx = 0;
@@ -161,9 +171,14 @@ int loop() {
 
 	switch(objects[i]->kind) {
 	case 0:
-	  t = cylinder_intersection(Ro, Rd,
-				    objects[i]->cylinder.center,
-				    objects[i]->cylinder.radius);
+	  t = sphere_intersection(Ro, Rd,
+				    objects[i]->sphere.position,
+				    objects[i]->sphere.radius);
+	  break;
+	case 1:
+	  t = plane_intersection(Ro, Rd,
+				    objects[i]->plane.position,
+				    objects[i]->plane.normal);
 	  break;
 	default:
 	  // Horrible error
