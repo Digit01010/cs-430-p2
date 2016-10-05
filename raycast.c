@@ -160,9 +160,9 @@ int main(int argc, char *argv[]) {
       int p = (M - y)*N + x; // Index of buffer
       if (best_t > 0 && best_t != INFINITY) {
         // Scale color values for ppm output
-        buffer[p].red = (char) objects[best_i]->color[0] * 255;
-        buffer[p].green = (char) objects[best_i]->color[1] * 255;
-        buffer[p].blue = (char) objects[best_i]->color[2] * 255;
+        buffer[p].red = (char) (objects[best_i]->color[0] * 255);
+        buffer[p].green = (char) (objects[best_i]->color[1] * 255);
+        buffer[p].blue = (char) (objects[best_i]->color[2] * 255);
       } else {
         // If there is no intersection, have a black background
         buffer[p].red = 0;
@@ -354,7 +354,7 @@ Object** read_scene(char* filename) {
     if (c == ']') {
       fprintf(stderr, "Error: This is the worst scene file EVER.\n");
       fclose(json);
-      return NULL;
+      exit(1);
     }
     if (c == '{') {
       skip_ws(json);

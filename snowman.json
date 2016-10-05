@@ -1,0 +1,55 @@
+[
+ {
+    "type": "camera",
+    "width": 1,
+    "height": 1
+ },
+ {
+    "type": "plane",
+    "color": [0.5, 1, 0.5],
+    "position": [0, -50, 0],
+    "normal": [0, 1, 0]
+ },
+ {
+    "type": "plane",
+    "color": [0.5, 0.75, 1],
+    "position": [0, 50, 0],
+    "normal": [0, 1, 0]
+ },
+ {
+    "type": "sphere",
+    "color": [1, 1, 1],
+    "position": [0, 2.5, 10],
+    "radius": 1.5
+ },
+ {
+    "type": "sphere",
+    "color": [1, 1, 1],
+    "position": [0, 1, 10],
+    "radius": 2
+ },
+ {
+    "type": "sphere",
+    "color": [1, 1, 1],
+    "position": [0, -1.5, 10],
+    "radius": 2.5
+ },
+ {
+    "type": "sphere",
+    "color": [1, 0.5, 0],
+    "position": [0, 2.5, 8.5],
+    "radius": 0.2
+ },
+ {
+    "type": "sphere",
+    "color": [0, 0, 0],
+    "position": [-0.5, 3, 8.5],
+    "radius": 0.2
+ },
+ {
+    "type": "sphere",
+    "color": [0, 0, 0],
+    "position": [0.5, 3, 8.5],
+    "radius": 0.2
+ }
+]
