@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
 }
 
 double sphere_intersection(double* Ro, double* Rd,
-			     double* C, double r) {
+                             double* C, double r) {
   double a = (sqr(Rd[0]) + sqr(Rd[1]) + sqr(Rd[2]));
   double b = 2 * (Rd[0] * (Ro[0] - C[0]) + Rd[1] * (Ro[1] - C[1]) + Rd[2] * (Ro[2] - C[2]));  
   double c = sqr(Ro[0] - C[0]) + sqr(Ro[1] - C[1]) + sqr(Ro[2] - C[2]) - sqr(r);
@@ -75,13 +75,14 @@ double sphere_intersection(double* Ro, double* Rd,
 }
 
 double plane_intersection(double* Ro, double* Rd,
-			     double* P, double* n) {
-  return -1;
+                             double* P, double* n) {
+  double t = -(n[0]*(Ro[0]-P[0]) + n[1]*(Ro[1]-P[1]) + n[2]*(Ro[2]-P[2])) / (n[0]*Rd[0] + n[1]*Rd[1] + n[2]*Rd[2]);
+  return t;
 }
 
 
 /*double cylinder_intersection(double* Ro, double* Rd,
-			     double* C, double r) {
+                             double* C, double r) {
   // Step 1. Find the equation for the object you are
   // interested in..  (e.g., cylinder)
   //
@@ -169,37 +170,37 @@ int loop() {
       double Ro[3] = {0, 0, 0};
       // Rd = normalize(P - Ro)
       double Rd[3] = {
-	cx - (w/2) + pixwidth * (x + 0.5),
-	cy - (h/2) + pixheight * (y + 0.5),
-	1
+        cx - (w/2) + pixwidth * (x + 0.5),
+        cy - (h/2) + pixheight * (y + 0.5),
+        1
       };
       normalize(Rd);
 
       double best_t = INFINITY;
       for (int i=0; objects[i] != 0; i += 1) {
-	double t = 0;
+        double t = 0;
 
-	switch(objects[i]->kind) {
-	case 0:
-	  t = sphere_intersection(Ro, Rd,
-				    objects[i]->sphere.position,
-				    objects[i]->sphere.radius);
-	  break;
-	case 1:
-	  t = plane_intersection(Ro, Rd,
-				    objects[i]->plane.position,
-				    objects[i]->plane.normal);
-	  break;
-	default:
-	  // Horrible error
-	  exit(1);
-	}
-	if (t > 0 && t < best_t) best_t = t;
+        switch(objects[i]->kind) {
+        case 0:
+          t = sphere_intersection(Ro, Rd,
+                                    objects[i]->sphere.position,
+                                    objects[i]->sphere.radius);
+          break;
+        case 1:
+          t = plane_intersection(Ro, Rd,
+                                    objects[i]->plane.position,
+                                    objects[i]->plane.normal);
+          break;
+        default:
+          // Horrible error
+          exit(1);
+        }
+        if (t > 0 && t < best_t) best_t = t;
       }
       if (best_t > 0 && best_t != INFINITY) {
-	printf("#");
+        printf("#");
       } else {
-	printf(".");
+        printf(".");
       }
       
     }
@@ -340,7 +341,7 @@ void read_scene(char* filename) {
       char* key = next_string(json);
       if (strcmp(key, "type") != 0) {
         fprintf(stderr, "Error: Expected \"type\" key on line number %d.\n", line);
-	exit(1);
+        exit(1);
       }
 
       skip_ws(json);
@@ -355,55 +356,55 @@ void read_scene(char* filename) {
       } else if (strcmp(value, "sphere") == 0) {
       } else if (strcmp(value, "plane") == 0) {
       } else {
-	fprintf(stderr, "Error: Unknown type, \"%s\", on line number %d.\n", value, line);
-	exit(1);
+        fprintf(stderr, "Error: Unknown type, \"%s\", on line number %d.\n", value, line);
+        exit(1);
       }
 
       skip_ws(json);
 
       while (1) {
-	// , }
-	c = next_c(json);
-	if (c == '}') {
-	  // stop parsing this object
-	  break;
-	} else if (c == ',') {
-	  // read another field
-	  skip_ws(json);
-	  char* key = next_string(json);
-	  skip_ws(json);
-	  expect_c(json, ':');
-	  skip_ws(json);
-	  if ((strcmp(key, "width") == 0) ||
-	      (strcmp(key, "height") == 0) ||
-	      (strcmp(key, "radius") == 0)) {
-	    double value = next_number(json);
-	  } else if ((strcmp(key, "color") == 0) ||
-		     (strcmp(key, "position") == 0) ||
-		     (strcmp(key, "normal") == 0)) {
-	    double* value = next_vector(json);
-	  } else {
-	    fprintf(stderr, "Error: Unknown property, \"%s\", on line %d.\n",
-		    key, line);
-	    //char* value = next_string(json);
-	  }
-	  skip_ws(json);
-	} else {
-	  fprintf(stderr, "Error: Unexpected value on line %d\n", line);
-	  exit(1);
-	}
+        // , }
+        c = next_c(json);
+        if (c == '}') {
+          // stop parsing this object
+          break;
+        } else if (c == ',') {
+          // read another field
+          skip_ws(json);
+          char* key = next_string(json);
+          skip_ws(json);
+          expect_c(json, ':');
+          skip_ws(json);
+          if ((strcmp(key, "width") == 0) ||
+              (strcmp(key, "height") == 0) ||
+              (strcmp(key, "radius") == 0)) {
+            double value = next_number(json);
+          } else if ((strcmp(key, "color") == 0) ||
+                     (strcmp(key, "position") == 0) ||
+                     (strcmp(key, "normal") == 0)) {
+            double* value = next_vector(json);
+          } else {
+            fprintf(stderr, "Error: Unknown property, \"%s\", on line %d.\n",
+                    key, line);
+            //char* value = next_string(json);
+          }
+          skip_ws(json);
+        } else {
+          fprintf(stderr, "Error: Unexpected value on line %d\n", line);
+          exit(1);
+        }
       }
       skip_ws(json);
       c = next_c(json);
       if (c == ',') {
-	// noop
-	skip_ws(json);
+        // noop
+        skip_ws(json);
       } else if (c == ']') {
-	fclose(json);
-	return;
+        fclose(json);
+        return;
       } else {
-	fprintf(stderr, "Error: Expecting ',' or ']' on line %d.\n", line);
-	exit(1);
+        fprintf(stderr, "Error: Expecting ',' or ']' on line %d.\n", line);
+        exit(1);
       }
     }
   }
