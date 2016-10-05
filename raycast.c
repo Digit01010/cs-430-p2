@@ -6,17 +6,16 @@
 
 int line = 1;
 
+// Holds an rgb triple of a pixel
+typedef struct Pixel {
+  unsigned char red, green, blue;
+} Pixel;
 
-double cylinder_intersection(double*, double*, double*, double);
-
-int next_c(FILE*);
-void expect_c(FILE*, int);
-void skip_ws(FILE*);
-char* next_string(FILE*);
-double next_number(FILE*);
-double* next_vector(FILE*);
-void read_scene(char*);
-int loop();
+// Holds information about the header of a ppm file
+typedef struct Header {
+   unsigned char magicNumber;
+   unsigned int width, height, maxColor;
+} Header;
 
 // Plymorphism in C
 
@@ -35,6 +34,17 @@ typedef struct {
   };
 } Object;
 
+double sphere_intersection(double*, double*, double*, double);
+double plane_intersection(double*, double*, double*, double*);
+void writeP3(Pixel *, Header, FILE *);
+int next_c(FILE*);
+void expect_c(FILE*, int);
+void skip_ws(FILE*);
+char* next_string(FILE*);
+double next_number(FILE*);
+double* next_vector(FILE*);
+void read_scene(char*);
+int loop();
 
 static inline double sqr(double v) {
   return v*v;
@@ -162,7 +172,9 @@ int loop() {
 
   int M = 20;
   int N = 20;
-
+  
+  Pixel *buffer = malloc(sizeof(Pixel) * N * M);
+  
   double pixheight = h / M;
   double pixwidth = w / N;
   for (int y = M; y > 0; y -= 1) {
@@ -197,21 +209,46 @@ int loop() {
         }
         if (t > 0 && t < best_t) best_t = t;
       }
+      int p = (M - y)*N + x;
       if (best_t > 0 && best_t != INFINITY) {
         printf("#");
+        buffer[p].red = 255;
+        buffer[p].green = 255;
+        buffer[p].blue = 255;
       } else {
         printf(".");
+        buffer[p].red = 0;
+        buffer[p].green = 0;
+        buffer[p].blue = 0;
       }
       
     }
     printf("\n");
   }
   
+  FILE* output = fopen("output.ppm", "w");
+  
+  Header outHeader;
+  outHeader.magicNumber = 3;
+  outHeader.maxColor = 255;
+  outHeader.width = N;
+  outHeader.height = M;
+  
+  writeP3(buffer, outHeader, output);
+  
+  
   return 0;
 }
 
-
-
+// Writes P3 data
+void writeP3(Pixel *buffer, Header h, FILE *fh) {
+  // Write the header
+  fprintf(fh, "P%d\n%d %d\n%d\n", h.magicNumber, h.width, h.height, h.maxColor);
+  // Write the ascii data
+  for (int i = 0; i < h.width * h.height; i++) {
+     fprintf(fh, "%d\n%d\n%d\n", buffer[i].red, buffer[i].green, buffer[i].blue);
+  }
+}
 
 // next_c() wraps the getc() function and provides error checking and line
 // number maintenance
