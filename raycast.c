@@ -72,33 +72,6 @@ int main(int argc, char *argv[]) {
   int M = atoi(argv[2]);
 
   Object** objects = read_scene(argv[3]);
-  /*Object** objects;
-  objects = malloc(sizeof(Object*)*3);
-  objects[0] = malloc(sizeof(Object));
-  objects[0]->kind = 1;
-  objects[0]->color[0] = 1;
-  objects[0]->color[1] = 0;
-  objects[0]->color[2] = 0;
-  objects[0]->sphere.radius = 2;
-  // object[0]->teapot.handle_length = 2;
-  objects[0]->sphere.position[0] = 1;
-  objects[0]->sphere.position[1] = 1;
-  objects[0]->sphere.position[2] = 10;
-  
-  objects[1] = malloc(sizeof(Object));
-  objects[1]->kind = 2;
-  objects[1]->color[0] = 0;
-  objects[1]->color[1] = 1;
-  objects[1]->color[2] = 0;
-  // object[0]->teapot.handle_length = 2;
-  objects[1]->plane.position[0] = 0;
-  objects[1]->plane.position[1] = -1;
-  objects[1]->plane.position[2] = 0;
-  objects[1]->plane.normal[0] = 0;
-  objects[1]->plane.normal[1] = 1;
-  objects[1]->plane.normal[2] = 0;
-  
-  objects[2] = NULL;*/
   
   double cx = 0;
   double cy = 0;
@@ -231,67 +204,6 @@ double plane_intersection(double* Ro, double* Rd,
   return t;
 }
 
-
-/*double cylinder_intersection(double* Ro, double* Rd,
-                             double* C, double r) {
-  // Step 1. Find the equation for the object you are
-  // interested in..  (e.g., cylinder)
-  //
-  // x^2 + z^2 = r^2
-  //
-  // Step 2. Parameterize the equation with a center point
-  // if needed
-  //
-  // (x-Cx)^2 + (z-Cz)^2 = r^2
-  //
-  // Step 3. Substitute the eq for a ray into our object
-  // equation.
-  //
-  // (Rox + t*Rdx - Cx)^2 + (Roz + t*Rdz - Cz)^2 - r^2 = 0
-  //
-  // Step 4. Solve for t.
-  //
-  // Step 4a. Rewrite the equation (flatten).
-  //
-  // -r^2 +
-  // t^2 * Rdx^2 +
-  // t^2 * Rdz^2 +
-  // 2*t * Rox * Rdx -
-  // 2*t * Rdx * Cx +
-  // 2*t * Roz * Rdz -
-  // 2*t * Rdz * Cz +
-  // Rox^2 -
-  // 2*Rox*Cx +
-  // Cx^2 +
-  // Roz^2 -
-  // 2*Roz*Cz +
-  // Cz^2 = 0
-  //
-  // Steb 4b. Rewrite the equation in terms of t.
-  //
-  // t^2 * (Rdx^2 + Rdz^2) +
-  // t * (2 * (Rox * Rdx - Rdx * Cx + Roz * Rdz - Rdz * Cz)) +
-  // Rox^2 - 2*Rox*Cx + Cx^2 + Roz^2 - 2*Roz*Cz + Cz^2 - r^2 = 0
-  //
-  // Use the quadratic equation to solve for t..
-  double a = (sqr(Rd[0]) + sqr(Rd[2]));
-  double b = (2 * (Ro[0] * Rd[0] - Rd[0] * C[0] + Ro[2] * Rd[2] - Rd[2] * C[2]));
-  double c = sqr(Ro[0]) - 2*Ro[0]*C[0] + sqr(C[0]) + sqr(Ro[2]) - 2*Ro[2]*C[2] + sqr(C[2]) - sqr(r);
-
-  double det = sqr(b) - 4 * a * c;
-  if (det < 0) return -1;
-
-  det = sqrt(det);
-  
-  double t0 = (-b - det) / (2*a);
-  if (t0 > 0) return t0;
-
-  double t1 = (-b + det) / (2*a);
-  if (t1 > 0) return t1;
-
-  return -1;
-}
-*/
 
 // Writes P3 data
 void writeP3(Pixel *buffer, Header h, FILE *fh) {
