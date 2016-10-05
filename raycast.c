@@ -68,8 +68,8 @@ int main(int argc, char *argv[]) {
   int M = atoi(argv[2]);
 
 
-  
-  Object** objects;
+  Object** objects = read_scene(argv[3]);
+  /*Object** objects;
   objects = malloc(sizeof(Object*)*3);
   objects[0] = malloc(sizeof(Object));
   objects[0]->kind = 1;
@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
   objects[1]->plane.normal[1] = 1;
   objects[1]->plane.normal[2] = 0;
   
-  objects[2] = NULL;
+  objects[2] = NULL;*/
   
   double cx = 0;
   double cy = 0;
@@ -148,6 +148,7 @@ int main(int argc, char *argv[]) {
         }
       }
       int p = (M - y)*N + x;
+      printf("%d\n", (int) best_t);
       if (best_t > 0 && best_t != INFINITY) {
         buffer[p].red = (char) objects[best_i]->color[0] * 255;
         buffer[p].green = (char) objects[best_i]->color[1] * 255;
@@ -375,7 +376,6 @@ Object** read_scene(char* filename) {
   Object** objects;
   objects = malloc(sizeof(Object*)*129);
   
-  
   FILE* json = fopen(filename, "r");
 
   if (json == NULL) {
@@ -416,22 +416,13 @@ Object** read_scene(char* filename) {
       skip_ws(json);
 
       char* value = next_string(json);
-
-      if (strcmp(value, "camera") == 0) {
-        //int widthflag = 0;
-        //int heightflag = 0;       
+      if (strcmp(value, "camera") == 0) {     
         objects[objcnt] = malloc(sizeof(Object));
         objects[objcnt]->kind = 0;
       } else if (strcmp(value, "sphere") == 0) {
-        //int colorflag = 0;
-        //int positionflag = 0;
-        //int radiusflag = 0;
         objects[objcnt] = malloc(sizeof(Object));
         objects[objcnt]->kind = 1;
       } else if (strcmp(value, "plane") == 0) {
-        //int colorflag = 0;
-        //int positionflag = 0;
-        //int normalflag = 0;
         objects[objcnt] = malloc(sizeof(Object));
         objects[objcnt]->kind = 2;
       } else {
@@ -446,6 +437,10 @@ Object** read_scene(char* filename) {
         c = next_c(json);
         if (c == '}') {
           // stop parsing this object
+          objcnt += 1;
+          if (objcnt > 128) {
+            exit(1);
+          }
           break;
         } else if (c == ',') {
           // read another field
@@ -455,17 +450,87 @@ Object** read_scene(char* filename) {
           expect_c(json, ':');
           skip_ws(json);
           
-          
-          
-          
-          if ((strcmp(key, "width") == 0) ||
-              (strcmp(key, "height") == 0) ||
-              (strcmp(key, "radius") == 0)) {
+          if (strcmp(key, "width") == 0) {
             double value = next_number(json);
-          } else if ((strcmp(key, "color") == 0) ||
-                     (strcmp(key, "position") == 0) ||
-                     (strcmp(key, "normal") == 0)) {
+            printf("W:%f\n", value);
+            switch (objects[objcnt]->kind) {
+            case 0:
+              objects[objcnt]->camera.width = value;
+              break;
+            default:
+              fprintf(stderr, "Error: Unexpected key on line %d.\n", line);
+              exit(1);
+              break;
+            }
+          } else if (strcmp(key, "height") == 0) {
+            double value = next_number(json);
+            printf("H:%f\n", value);
+            switch (objects[objcnt]->kind) {
+            case 0:
+              objects[objcnt]->camera.height = value;
+              break;
+            default:
+              fprintf(stderr, "Error: Unexpected key on line %d.\n", line);
+              exit(1);
+              break;
+            }
+          } else if (strcmp(key, "radius") == 0) {
+            double value = next_number(json);
+            switch (objects[objcnt]->kind) {
+            case 1:
+              objects[objcnt]->sphere.radius = value;
+              break;
+            default:
+              fprintf(stderr, "Error: Unexpected key on line %d.\n", line);
+              exit(1);
+              break;
+            }
+          } else if (strcmp(key, "color") == 0) {
             double* value = next_vector(json);
+            printf("C:%d, %d, %d \n", (int)value[0], (int)value[1], (int)value[2]);
+            switch (objects[objcnt]->kind) {
+            case 0:
+              fprintf(stderr, "Error: Unexpected key on line %d.\n", line);
+              exit(1);
+              break;
+            default:
+              objects[objcnt]->color[0] = value[0];
+              objects[objcnt]->color[1] = value[1];
+              objects[objcnt]->color[2] = value[2];
+              break;
+            }
+          } else if (strcmp(key, "position") == 0){
+            double* value = next_vector(json);
+            printf("P:%d, %d, %d \n", (int)value[0], (int)value[1], (int)value[2]);
+            switch (objects[objcnt]->kind) {
+            case 1:
+              objects[objcnt]->sphere.position[0] = value[0];
+              objects[objcnt]->sphere.position[1] = value[1];
+              objects[objcnt]->sphere.position[2] = value[2];
+              break;
+            case 2:
+              objects[objcnt]->plane.position[0] = value[0];
+              objects[objcnt]->plane.position[1] = value[1];
+              objects[objcnt]->plane.position[2] = value[2];
+              break;
+            default:
+              fprintf(stderr, "Error: Unexpected key on line %d.\n", line);
+              exit(1);
+              break;
+            }
+          } else if (strcmp(key, "normal") == 0) {
+            double* value = next_vector(json);
+            switch (objects[objcnt]->kind) {
+            case 2:
+              objects[objcnt]->plane.normal[0] = value[0];
+              objects[objcnt]->plane.normal[1] = value[1];
+              objects[objcnt]->plane.normal[2] = value[2];
+              break;
+            default:
+              fprintf(stderr, "Error: Unexpected key on line %d.\n", line);
+              exit(1);
+              break;
+            }
           } else {
             fprintf(stderr, "Error: Unknown property, \"%s\", on line %d.\n",
                     key, line);
@@ -483,18 +548,18 @@ Object** read_scene(char* filename) {
         // noop
         skip_ws(json);
       } else if (c == ']') {
+        objects[objcnt] = NULL;
         fclose(json);
-        return NULL;
+        return objects;
       } else {
         fprintf(stderr, "Error: Expecting ',' or ']' on line %d.\n", line);
         exit(1);
       }
     }
-    objcnt += 1;
-    if (objcnt > 128) {
-        exit(1);
-    }
+
   }
+
+  
   return NULL;
 }
 
