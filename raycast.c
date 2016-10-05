@@ -148,7 +148,6 @@ int main(int argc, char *argv[]) {
         }
       }
       int p = (M - y)*N + x;
-      printf("%d\n", (int) best_t);
       if (best_t > 0 && best_t != INFINITY) {
         buffer[p].red = (char) objects[best_i]->color[0] * 255;
         buffer[p].green = (char) objects[best_i]->color[1] * 255;
@@ -346,7 +345,7 @@ char* next_string(FILE* json) {
 
 double next_number(FILE* json) {
   double value;
-  fscanf(json, "%f", &value);
+  fscanf(json, "%lf", &value);
   // Error check this..
   return value;
 }
@@ -452,7 +451,6 @@ Object** read_scene(char* filename) {
           
           if (strcmp(key, "width") == 0) {
             double value = next_number(json);
-            printf("W:%f\n", value);
             switch (objects[objcnt]->kind) {
             case 0:
               objects[objcnt]->camera.width = value;
@@ -464,7 +462,6 @@ Object** read_scene(char* filename) {
             }
           } else if (strcmp(key, "height") == 0) {
             double value = next_number(json);
-            printf("H:%f\n", value);
             switch (objects[objcnt]->kind) {
             case 0:
               objects[objcnt]->camera.height = value;
@@ -487,7 +484,6 @@ Object** read_scene(char* filename) {
             }
           } else if (strcmp(key, "color") == 0) {
             double* value = next_vector(json);
-            printf("C:%f, %f, %f \n", value[0], value[1], value[2]);
             switch (objects[objcnt]->kind) {
             case 0:
               fprintf(stderr, "Error: Unexpected key on line %d.\n", line);
@@ -501,7 +497,6 @@ Object** read_scene(char* filename) {
             }
           } else if (strcmp(key, "position") == 0){
             double* value = next_vector(json);
-            printf("P:%f, %f, %f \n", value[0], value[1], value[2]);
             switch (objects[objcnt]->kind) {
             case 1:
               objects[objcnt]->sphere.position[0] = value[0];
