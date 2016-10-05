@@ -20,9 +20,13 @@ typedef struct Header {
 // Plymorphism in C
 
 typedef struct {
-  int kind; // 0 = sphere, 1 = plane
+  int kind; // 0 = camera, 1 = sphere, 2 = plane
   double color[3];
   union {
+    struct {
+      double width;
+      double height;
+    } camera;
     struct {
       double position[3];
       double radius;
@@ -43,7 +47,7 @@ void skip_ws(FILE*);
 char* next_string(FILE*);
 double next_number(FILE*);
 double* next_vector(FILE*);
-void read_scene(char*);
+Object** read_scene(char*);
 
 static inline double sqr(double v) {
   return v*v;
@@ -63,11 +67,12 @@ int main(int argc, char *argv[]) {
   int N = atoi(argv[1]);
   int M = atoi(argv[2]);
 
+
   
   Object** objects;
   objects = malloc(sizeof(Object*)*3);
   objects[0] = malloc(sizeof(Object));
-  objects[0]->kind = 0;
+  objects[0]->kind = 1;
   objects[0]->color[0] = 1;
   objects[0]->color[1] = 0;
   objects[0]->color[2] = 0;
@@ -78,7 +83,7 @@ int main(int argc, char *argv[]) {
   objects[0]->sphere.position[2] = 10;
   
   objects[1] = malloc(sizeof(Object));
-  objects[1]->kind = 1;
+  objects[1]->kind = 2;
   objects[1]->color[0] = 0;
   objects[1]->color[1] = 1;
   objects[1]->color[2] = 0;
@@ -121,11 +126,14 @@ int main(int argc, char *argv[]) {
 
         switch(objects[i]->kind) {
         case 0:
+          t = -1;
+          break;
+        case 1:
           t = sphere_intersection(Ro, Rd,
                                     objects[i]->sphere.position,
                                     objects[i]->sphere.radius);
           break;
-        case 1:
+        case 2:
           t = plane_intersection(Ro, Rd,
                                     objects[i]->plane.position,
                                     objects[i]->plane.normal);
@@ -141,19 +149,16 @@ int main(int argc, char *argv[]) {
       }
       int p = (M - y)*N + x;
       if (best_t > 0 && best_t != INFINITY) {
-        printf("#");
         buffer[p].red = (char) objects[best_i]->color[0] * 255;
         buffer[p].green = (char) objects[best_i]->color[1] * 255;
         buffer[p].blue = (char) objects[best_i]->color[2] * 255;
       } else {
-        printf(".");
         buffer[p].red = 0;
         buffer[p].green = 0;
         buffer[p].blue = 0;
       }
       
     }
-    printf("\n");
   }
   
   FILE* output = fopen(argv[4], "w");
@@ -364,8 +369,13 @@ double* next_vector(FILE* json) {
 }
 
 
-void read_scene(char* filename) {
+Object** read_scene(char* filename) {
   int c;
+  
+  Object** objects;
+  objects = malloc(sizeof(Object*)*129);
+  
+  
   FILE* json = fopen(filename, "r");
 
   if (json == NULL) {
@@ -381,13 +391,13 @@ void read_scene(char* filename) {
   skip_ws(json);
 
   // Find the objects
-
+  int objcnt = 0;
   while (1) {
     c = fgetc(json);
     if (c == ']') {
       fprintf(stderr, "Error: This is the worst scene file EVER.\n");
       fclose(json);
-      return;
+      return NULL;
     }
     if (c == '{') {
       skip_ws(json);
@@ -408,8 +418,22 @@ void read_scene(char* filename) {
       char* value = next_string(json);
 
       if (strcmp(value, "camera") == 0) {
+        //int widthflag = 0;
+        //int heightflag = 0;       
+        objects[objcnt] = malloc(sizeof(Object));
+        objects[objcnt]->kind = 0;
       } else if (strcmp(value, "sphere") == 0) {
+        //int colorflag = 0;
+        //int positionflag = 0;
+        //int radiusflag = 0;
+        objects[objcnt] = malloc(sizeof(Object));
+        objects[objcnt]->kind = 1;
       } else if (strcmp(value, "plane") == 0) {
+        //int colorflag = 0;
+        //int positionflag = 0;
+        //int normalflag = 0;
+        objects[objcnt] = malloc(sizeof(Object));
+        objects[objcnt]->kind = 2;
       } else {
         fprintf(stderr, "Error: Unknown type, \"%s\", on line number %d.\n", value, line);
         exit(1);
@@ -430,6 +454,10 @@ void read_scene(char* filename) {
           skip_ws(json);
           expect_c(json, ':');
           skip_ws(json);
+          
+          
+          
+          
           if ((strcmp(key, "width") == 0) ||
               (strcmp(key, "height") == 0) ||
               (strcmp(key, "radius") == 0)) {
@@ -456,12 +484,17 @@ void read_scene(char* filename) {
         skip_ws(json);
       } else if (c == ']') {
         fclose(json);
-        return;
+        return NULL;
       } else {
         fprintf(stderr, "Error: Expecting ',' or ']' on line %d.\n", line);
         exit(1);
       }
     }
+    objcnt += 1;
+    if (objcnt > 128) {
+        exit(1);
+    }
   }
+  return NULL;
 }
 
