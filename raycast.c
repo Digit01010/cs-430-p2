@@ -18,17 +18,6 @@ double* next_vector(FILE*);
 void read_scene(char*);
 int loop();
 
-int main(int argc, char *argv[]) {
-  loop();
-  //read_scene(argv[1]);
-  return 0;
-}
-
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-
 // Plymorphism in C
 
 typedef struct {
@@ -59,8 +48,29 @@ static inline void normalize(double* v) {
   v[2] /= len;
 }
 
+int main(int argc, char *argv[]) {
+  loop();
+  //read_scene(argv[1]);
+  return 0;
+}
+
 double sphere_intersection(double* Ro, double* Rd,
-			     double* P, double r) {
+			     double* C, double r) {
+  double a = (sqr(Rd[0]) + sqr(Rd[1]) + sqr(Rd[2]));
+  double b = 2 * (Rd[0] * (Ro[0] - C[0]) + Rd[1] * (Ro[1] - C[1]) + Rd[2] * (Ro[2] - C[2]));  
+  double c = sqr(Ro[0] - C[0]) + sqr(Ro[1] - C[1]) + sqr(Ro[2] - C[2]) - sqr(r);
+
+  double det = sqr(b) - 4 * a * c;
+  if (det < 0) return -1;
+
+  det = sqrt(det);
+  
+  double t0 = (-b - det) / (2*a);
+  if (t0 > 0) return t0;
+
+  double t1 = (-b + det) / (2*a);
+  if (t1 > 0) return t1;
+
   return -1;
 }
 
@@ -137,7 +147,7 @@ int loop() {
   objects = malloc(sizeof(Object*)*2);
   objects[0] = malloc(sizeof(Object));
   objects[0]->kind = 0;
-  objects[0]->sphere.radius = 1;
+  objects[0]->sphere.radius = 5;
   // object[0]->teapot.handle_length = 2;
   objects[0]->sphere.position[0] = 0;
   objects[0]->sphere.position[1] = 0;
