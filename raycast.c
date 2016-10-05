@@ -65,20 +65,37 @@ int main(int argc, char *argv[]) {
 
   
   Object** objects;
-  objects = malloc(sizeof(Object*)*2);
+  objects = malloc(sizeof(Object*)*3);
   objects[0] = malloc(sizeof(Object));
   objects[0]->kind = 0;
-  objects[0]->sphere.radius = 5;
+  objects[0]->color[0] = 1;
+  objects[0]->color[1] = 0;
+  objects[0]->color[2] = 0;
+  objects[0]->sphere.radius = 2;
   // object[0]->teapot.handle_length = 2;
-  objects[0]->sphere.position[0] = 0;
-  objects[0]->sphere.position[1] = 5;
-  objects[0]->sphere.position[2] = 20;
-  objects[1] = NULL;
+  objects[0]->sphere.position[0] = 1;
+  objects[0]->sphere.position[1] = 1;
+  objects[0]->sphere.position[2] = 10;
+  
+  objects[1] = malloc(sizeof(Object));
+  objects[1]->kind = 1;
+  objects[1]->color[0] = 0;
+  objects[1]->color[1] = 1;
+  objects[1]->color[2] = 0;
+  // object[0]->teapot.handle_length = 2;
+  objects[1]->plane.position[0] = 0;
+  objects[1]->plane.position[1] = -1;
+  objects[1]->plane.position[2] = 0;
+  objects[1]->plane.normal[0] = 0;
+  objects[1]->plane.normal[1] = 1;
+  objects[1]->plane.normal[2] = 0;
+  
+  objects[2] = NULL;
   
   double cx = 0;
   double cy = 0;
-  double h = 0.7;
-  double w = 0.7;
+  double h = 1;
+  double w = 1;
 
 
   
@@ -98,6 +115,7 @@ int main(int argc, char *argv[]) {
       normalize(Rd);
 
       double best_t = INFINITY;
+      int best_i = 0;
       for (int i=0; objects[i] != 0; i += 1) {
         double t = 0;
 
@@ -116,14 +134,17 @@ int main(int argc, char *argv[]) {
           // Horrible error
           exit(1);
         }
-        if (t > 0 && t < best_t) best_t = t;
+        if (t > 0 && t < best_t) {
+          best_t = t;
+          best_i = i;
+        }
       }
       int p = (M - y)*N + x;
       if (best_t > 0 && best_t != INFINITY) {
         printf("#");
-        buffer[p].red = 255;
-        buffer[p].green = 255;
-        buffer[p].blue = 255;
+        buffer[p].red = (char) objects[best_i]->color[0] * 255;
+        buffer[p].green = (char) objects[best_i]->color[1] * 255;
+        buffer[p].blue = (char) objects[best_i]->color[2] * 255;
       } else {
         printf(".");
         buffer[p].red = 0;
