@@ -151,7 +151,7 @@ int loop() {
   objects[0]->sphere.radius = 5;
   // object[0]->teapot.handle_length = 2;
   objects[0]->sphere.position[0] = 0;
-  objects[0]->sphere.position[1] = 0;
+  objects[0]->sphere.position[1] = 5;
   objects[0]->sphere.position[2] = 20;
   objects[1] = NULL;
   
@@ -165,7 +165,7 @@ int loop() {
 
   double pixheight = h / M;
   double pixwidth = w / N;
-  for (int y = 0; y < M; y += 1) {
+  for (int y = M; y > 0; y -= 1) {
     for (int x = 0; x < N; x += 1) {
       double Ro[3] = {0, 0, 0};
       // Rd = normalize(P - Ro)
