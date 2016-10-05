@@ -62,11 +62,14 @@ static inline void normalize(double* v) {
 }
 
 int main(int argc, char *argv[]) {
-  
+  if (argc != 5) {
+    fprintf(stderr, "Error: Incorrect number of arguments.\n");
+    printf("Usage: raycast width height input.json output.ppm\n");
+    return(1);
+  }
   
   int N = atoi(argv[1]);
   int M = atoi(argv[2]);
-
 
   Object** objects = read_scene(argv[3]);
   /*Object** objects;
@@ -101,8 +104,6 @@ int main(int argc, char *argv[]) {
   double cy = 0;
   double h = 1;
   double w = 1;
-
-
   
   Pixel *buffer = malloc(sizeof(Pixel) * N * M);
   
@@ -139,7 +140,7 @@ int main(int argc, char *argv[]) {
                                     objects[i]->plane.normal);
           break;
         default:
-          // Horrible error
+          fprintf(stderr, "Error: Programmer forgot to implement an intersection.");
           exit(1);
         }
         if (t > 0 && t < best_t) {
@@ -162,6 +163,11 @@ int main(int argc, char *argv[]) {
   }
   
   FILE* output = fopen(argv[4], "w");
+  
+  if (output == NULL) {
+    fprintf(stderr, "Error: Could not write to file \"%s\"\n", filename);
+    exit(1);
+  }
   
   Header outHeader;
   outHeader.magicNumber = 3;
@@ -346,7 +352,10 @@ char* next_string(FILE* json) {
 double next_number(FILE* json) {
   double value;
   fscanf(json, "%lf", &value);
-  // Error check this..
+  if (ferror(json)) {
+    fprintf(stderr, "Error: Could not read number on line %d.\n", line);
+    exit(1);
+  }
   return value;
 }
 
